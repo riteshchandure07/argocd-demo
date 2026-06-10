@@ -1,0 +1,110 @@
+name: CI/CD — Build, Push & Deploy
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:         # allow manual runs from the GitHub UI
+
+env:
+  REGISTRY: docker.io
+  IMAGE_NAME: ${{ secrets.DOCKERHUB_USERNAME }}/taskflow-ui
+
+jobs:
+  # ────────────────────────────────────────────────────────────────────────────
+  build-and-push:
+    name: Build, Test & Push Image
+    runs-on: ubuntu-latest
+    outputs:
+      short-sha: ${{ steps.vars.outputs.SHORT_SHA }}
+
+    steps:
+      - name: Checkout source repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build application
+        run: npm run build
+        env:
+          VITE_APP_VERSION: ${{ github.sha }}
+
+      - name: Compute short SHA
+        id: vars
+        run: echo "SHORT_SHA=$(echo ${{ github.sha }} | cut -c1-7)" >> "$GITHUB_OUTPUT"
+
+      - name: Set up QEMU (multi-arch emulation)
+        uses: docker/setup-qemu-action@v3
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          push: true
+          platforms: linux/amd64,linux/arm64
+          tags: |
+            ${{ env.IMAGE_NAME }}:latest
+            ${{ env.IMAGE_NAME }}:${{ steps.vars.outputs.SHORT_SHA }}
+          build-args: |
+            VITE_APP_VERSION=${{ steps.vars.outputs.SHORT_SHA }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+          labels: |
+            org.opencontainers.image.source=${{ github.server_url }}/${{ github.repository }}
+            org.opencontainers.image.revision=${{ github.sha }}
+
+  # ────────────────────────────────────────────────────────────────────────────
+  update-gitops:
+    name: Update GitOps Repository
+    runs-on: ubuntu-latest
+    needs: build-and-push
+
+    steps:
+      - name: Checkout GitOps repository
+        uses: actions/checkout@v4
+        with:
+          repository: ${{ secrets.GITOPS_REPO }}   # e.g. YOUR_GITHUB_USERNAME/taskflow-gitops
+          token: ${{ secrets.GITOPS_TOKEN }}
+          path: gitops
+
+      - name: Update image tag in values.yaml
+        run: |
+          cd gitops
+          # Replace the tag line under the image block
+          sed -i "s|^  tag:.*|  tag: \"${{ needs.build-and-push.outputs.short-sha }}\"|" \
+            helm-chart/values.yaml
+
+      - name: Commit and push updated values.yaml
+        run: |
+          cd gitops
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git config user.name  "github-actions[bot]"
+
+          git add helm-chart/values.yaml
+
+          # Exit cleanly when there is nothing to commit (e.g. re-run of same SHA)
+          git diff --staged --quiet && echo "No changes to commit" && exit 0
+
+          git commit -m "ci: bump taskflow-ui image to ${{ needs.build-and-push.outputs.short-sha }}
+
+          Source commit: ${{ github.repository }}@${{ github.sha }}
+          Triggered by: ${{ github.actor }}
+          [skip ci]"
+
+          git push

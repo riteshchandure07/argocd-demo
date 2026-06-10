@@ -1,0 +1,47 @@
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+  name: taskflow-ui
+  namespace: argocd
+  # Ensure Argo CD deletes all managed resources when the Application is deleted
+  finalizers:
+    - resources-finalizer.argocd.argoproj.io
+  labels:
+    app.kubernetes.io/name: taskflow-ui
+    app.kubernetes.io/part-of: taskflow
+spec:
+  project: default
+
+  # ── Source: the GitOps repository that holds the Helm chart ────────────────
+  source:
+    repoURL: https://github.com/YOUR_GITHUB_USERNAME/taskflow-gitops.git
+    targetRevision: HEAD
+    path: helm-chart
+    helm:
+      valueFiles:
+        - values.yaml
+
+  # ── Destination: the local Minikube cluster ────────────────────────────────
+  destination:
+    server: https://kubernetes.default.svc
+    namespace: taskflow
+
+  # ── Sync policy ──────────────────────────────────────────────────────────────
+  syncPolicy:
+    automated:
+      prune: true          # remove resources that no longer exist in Git
+      selfHeal: true       # revert manual changes made directly in the cluster
+    syncOptions:
+      - CreateNamespace=true           # create `taskflow` ns if it does not exist
+      - PrunePropagationPolicy=foreground
+      - PruneLast=true                 # prune old resources only after new ones are healthy
+      - ApplyOutOfSyncOnly=true        # skip resources that are already in sync
+    retry:
+      limit: 5
+      backoff:
+        duration: 5s
+        factor: 2
+        maxDuration: 3m
+
+  # ── Health assessment overrides (optional) ────────────────────────────────
+  # revisionHistoryLimit: 3

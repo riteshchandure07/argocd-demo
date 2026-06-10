@@ -1,0 +1,23 @@
+apiVersion: v2
+name: taskflow-ui
+description: >
+  Helm chart for the TaskFlow UI — a React + Vite frontend
+  that demonstrates a production-grade GitOps workflow with
+  Argo CD and Minikube.
+type: application
+version: 0.1.0
+appVersion: "1.0.0"
+keywords:
+  - react
+  - vite
+  - gitops
+  - argocd
+  - kubernetes
+  - frontend
+maintainers:
+  - name: taskflow-team
+    email: team@taskflow.dev
+home: https://github.com/YOUR_GITHUB_USERNAME/taskflow-ui
+sources:
+  - https://github.com/YOUR_GITHUB_USERNAME/taskflow-ui
+  - https://github.com/YOUR_GITHUB_USERNAME/taskflow-gitops
