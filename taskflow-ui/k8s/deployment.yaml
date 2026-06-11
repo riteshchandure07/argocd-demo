@@ -1,4 +1,4 @@
-apiVersion: apps/v1
+﻿apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: taskflow-ui
@@ -25,7 +25,7 @@ spec:
       terminationGracePeriodSeconds: 30
       containers:
         - name: taskflow-ui
-          image: your-dockerhub-username/taskflow-ui:1.0.0
+          image: riteshchandure7/taskflow-ui:1.0.0
           imagePullPolicy: IfNotPresent
           ports:
             - name: http

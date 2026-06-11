@@ -1,4 +1,4 @@
-apiVersion: argoproj.io/v1alpha1
+﻿apiVersion: argoproj.io/v1alpha1
 kind: Application
 metadata:
   name: taskflow-ui
@@ -12,21 +12,21 @@ metadata:
 spec:
   project: default
 
-  # ── Source: the GitOps repository that holds the Helm chart ────────────────
+  # â”€â”€ Source: the GitOps repository that holds the Helm chart â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   source:
-    repoURL: https://github.com/YOUR_GITHUB_USERNAME/taskflow-gitops.git
+    repoURL: https://github.com/riteshchandure7/argocd-demo.git
     targetRevision: HEAD
-    path: helm-chart
+    path: taskflow-gitops/helm-chart
     helm:
       valueFiles:
         - values.yaml
 
-  # ── Destination: the local Minikube cluster ────────────────────────────────
+  # â”€â”€ Destination: the local Minikube cluster â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   destination:
     server: https://kubernetes.default.svc
     namespace: taskflow
 
-  # ── Sync policy ──────────────────────────────────────────────────────────────
+  # â”€â”€ Sync policy â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   syncPolicy:
     automated:
       prune: true          # remove resources that no longer exist in Git
@@ -43,5 +43,5 @@ spec:
         factor: 2
         maxDuration: 3m
 
-  # ── Health assessment overrides (optional) ────────────────────────────────
+  # â”€â”€ Health assessment overrides (optional) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
   # revisionHistoryLimit: 3

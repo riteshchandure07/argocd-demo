@@ -1,4 +1,4 @@
-# TaskFlow UI — GitOps with Argo CD & Minikube: Complete Setup Guide
+﻿# TaskFlow UI â€” GitOps with Argo CD & Minikube: Complete Setup Guide
 
 ## Prerequisites
 
@@ -10,12 +10,12 @@
 | Helm | 3.14+ | https://helm.sh/docs/intro/install/ |
 | Node.js | 20+ | https://nodejs.org/ |
 | Git | any | https://git-scm.com/ |
-| GitHub account | — | https://github.com/ |
-| Docker Hub account | — | https://hub.docker.com/ |
+| GitHub account | â€” | https://github.com/ |
+| Docker Hub account | â€” | https://hub.docker.com/ |
 
 ---
 
-## Step 1 — Prepare GitHub Repositories
+## Step 1 â€” Prepare GitHub Repositories
 
 Create two public (or private) repositories on GitHub:
 
@@ -29,47 +29,47 @@ Push the respective folders from this project:
 ```bash
 # From ArgoCD/taskflow-ui
 git init && git add . && git commit -m "feat: initial taskflow-ui"
-git remote add origin https://github.com/YOUR_USERNAME/taskflow-ui.git
+git remote add origin https://github.com/riteshchandure7/taskflow-ui.git
 git push -u origin main
 
 # From ArgoCD/taskflow-gitops
 git init && git add . && git commit -m "feat: initial helm chart"
-git remote add origin https://github.com/YOUR_USERNAME/taskflow-gitops.git
+git remote add origin https://github.com/riteshchandure7/taskflow-gitops.git
 git push -u origin main
 ```
 
 ---
 
-## Step 2 — Configure GitHub Actions Secrets
+## Step 2 â€” Configure GitHub Actions Secrets
 
-In the **taskflow-ui** repository → Settings → Secrets and variables → Actions:
+In the **taskflow-ui** repository â†’ Settings â†’ Secrets and variables â†’ Actions:
 
 | Secret | Value |
 |--------|-------|
 | `DOCKERHUB_USERNAME` | Your Docker Hub username |
-| `DOCKERHUB_TOKEN` | Docker Hub access token (Account Settings → Security) |
-| `GITOPS_REPO` | `YOUR_USERNAME/taskflow-gitops` |
+| `DOCKERHUB_TOKEN` | Docker Hub access token (Account Settings â†’ Security) |
+| `GITOPS_REPO` | `riteshchandure7/taskflow-gitops` |
 | `GITOPS_TOKEN` | GitHub PAT with `repo` write scope |
 
 ---
 
-## Step 3 — Update Placeholders
+## Step 3 â€” Update Placeholders
 
 In **taskflow-gitops/helm-chart/values.yaml** replace:
 ```yaml
 image:
-  repository: your-dockerhub-username/taskflow-ui   # ← your Docker Hub username
+  repository: your-dockerhub-username/taskflow-ui   # â† your Docker Hub username
 ```
 
 In **taskflow-gitops/argocd-application.yaml** replace:
 ```yaml
 source:
-  repoURL: https://github.com/YOUR_GITHUB_USERNAME/taskflow-gitops.git  # ← your username
+  repoURL: https://github.com/riteshchandure7/taskflow-gitops.git  # â† your username
 ```
 
 ---
 
-## Step 4 — Start Minikube with Ingress
+## Step 4 â€” Start Minikube with Ingress
 
 ```bash
 minikube start --cpus=2 --memory=4096
@@ -82,7 +82,7 @@ kubectl get pods -n ingress-nginx
 
 ---
 
-## Step 5 — Install Argo CD
+## Step 5 â€” Install Argo CD
 
 ```bash
 kubectl create namespace argocd
@@ -106,17 +106,17 @@ Open https://localhost:8080 in your browser to access the Argo CD UI.
 
 ---
 
-## Step 6 — Register the GitOps Repository in Argo CD
+## Step 6 â€” Register the GitOps Repository in Argo CD
 
 ```bash
-argocd repo add https://github.com/YOUR_USERNAME/taskflow-gitops.git \
-  --username YOUR_USERNAME \
+argocd repo add https://github.com/riteshchandure7/taskflow-gitops.git \
+  --username riteshchandure7 \
   --password YOUR_GITHUB_PAT
 ```
 
 ---
 
-## Step 7 — Deploy the Argo CD Application
+## Step 7 â€” Deploy the Argo CD Application
 
 ```bash
 kubectl apply -f taskflow-gitops/argocd-application.yaml
@@ -135,7 +135,7 @@ watch argocd app get taskflow-ui
 
 ---
 
-## Step 8 — Access the Application
+## Step 8 â€” Access the Application
 
 ```bash
 # Get Minikube IP
@@ -152,7 +152,7 @@ Open http://taskflow.local in your browser.
 
 ---
 
-## Step 9 — Validate the Full GitOps Loop
+## Step 9 â€” Validate the Full GitOps Loop
 
 ### 1. Verify initial deployment
 ```bash
@@ -163,10 +163,10 @@ argocd app get taskflow-ui   # Status: Synced, Health: Healthy
 
 ### 2. Trigger a new deployment (the GitOps loop)
 
-Edit any source file — for example bump the version comment in `src/App.jsx`, then push:
+Edit any source file â€” for example bump the version comment in `src/App.jsx`, then push:
 
 ```bash
-git add . && git commit -m "feat: v1.1.0 — test gitops loop"
+git add . && git commit -m "feat: v1.1.0 â€” test gitops loop"
 git push origin main
 ```
 
@@ -174,21 +174,21 @@ git push origin main
 
 ```
 GitHub Actions:
-  ✓ npm install
-  ✓ npm build
-  ✓ docker build & push → docker.io/YOUR_USERNAME/taskflow-ui:<sha>
-  ✓ checkout taskflow-gitops
-  ✓ sed image.tag → <sha>
-  ✓ git commit & push
+  âœ“ npm install
+  âœ“ npm build
+  âœ“ docker build & push â†’ docker.io/riteshchandure7/taskflow-ui:<sha>
+  âœ“ checkout taskflow-gitops
+  âœ“ sed image.tag â†’ <sha>
+  âœ“ git commit & push
 
 Argo CD:
-  → detects new commit in taskflow-gitops (polls every 3 min by default)
-  → diff: image.tag changed
-  → applies updated Deployment
-  → Kubernetes performs RollingUpdate (maxUnavailable=0)
-  → new pods become Ready
-  → old pods terminated
-  → Status: Synced, Health: Healthy
+  â†’ detects new commit in taskflow-gitops (polls every 3 min by default)
+  â†’ diff: image.tag changed
+  â†’ applies updated Deployment
+  â†’ Kubernetes performs RollingUpdate (maxUnavailable=0)
+  â†’ new pods become Ready
+  â†’ old pods terminated
+  â†’ Status: Synced, Health: Healthy
 ```
 
 ### 4. Confirm new version
@@ -201,7 +201,7 @@ kubectl describe deployment taskflow-ui -n taskflow | grep Image
 
 ---
 
-## Helm Chart — Manual Operations
+## Helm Chart â€” Manual Operations
 
 ```bash
 # Dry-run / template preview
@@ -210,7 +210,7 @@ helm template taskflow taskflow-gitops/helm-chart --namespace taskflow
 # Lint
 helm lint taskflow-gitops/helm-chart
 
-# Install directly (bypass Argo CD — useful for debugging)
+# Install directly (bypass Argo CD â€” useful for debugging)
 helm upgrade --install taskflow taskflow-gitops/helm-chart \
   --namespace taskflow --create-namespace \
   --set image.tag=<sha> \
@@ -225,10 +225,10 @@ helm uninstall taskflow -n taskflow
 ## Useful Commands
 
 ```bash
-# Argo CD — force sync
+# Argo CD â€” force sync
 argocd app sync taskflow-ui
 
-# Argo CD — enable auto-sync (if it somehow got disabled)
+# Argo CD â€” enable auto-sync (if it somehow got disabled)
 argocd app set taskflow-ui --sync-policy automated
 
 # Scale replicas live (Argo CD will self-heal back to values.yaml)
@@ -252,44 +252,44 @@ kubectl port-forward svc/taskflow-ui -n taskflow 3000:80
 
 ```
 Developer
-   │  git push → main
-   ▼
-┌─────────────────────────┐
-│  GitHub                 │
-│  taskflow-ui (source)   │
-└────────────┬────────────┘
-             │ triggers
-             ▼
-┌─────────────────────────┐
-│  GitHub Actions CI/CD   │
-│  1. npm ci + npm build  │
-│  2. docker build & push │──► Docker Hub
-│  3. update values.yaml  │
-│  4. git push            │
-└────────────┬────────────┘
-             │ commit
-             ▼
-┌─────────────────────────┐
-│  GitHub                 │
-│  taskflow-gitops        │◄── Argo CD polls (3 min)
-│  helm-chart/values.yaml │
-└────────────┬────────────┘
-             │ detects drift
-             ▼
-┌─────────────────────────┐
-│  Argo CD (in Minikube)  │
-│  sync → apply Helm diff │
-└────────────┬────────────┘
-             │ RollingUpdate
-             ▼
-┌─────────────────────────┐
-│  Kubernetes (Minikube)  │
-│  namespace: taskflow    │
-│  • Deployment           │
-│  • Service (ClusterIP)  │
-│  • Ingress (nginx)      │
-└─────────────────────────┘
-             │
-             ▼ http://taskflow.local
+   â”‚  git push â†’ main
+   â–¼
+â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
+â”‚  GitHub                 â”‚
+â”‚  taskflow-ui (source)   â”‚
+â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¬â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
+             â”‚ triggers
+             â–¼
+â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
+â”‚  GitHub Actions CI/CD   â”‚
+â”‚  1. npm ci + npm build  â”‚
+â”‚  2. docker build & push â”‚â”€â”€â–º Docker Hub
+â”‚  3. update values.yaml  â”‚
+â”‚  4. git push            â”‚
+â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¬â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
+             â”‚ commit
+             â–¼
+â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
+â”‚  GitHub                 â”‚
+â”‚  taskflow-gitops        â”‚â—„â”€â”€ Argo CD polls (3 min)
+â”‚  helm-chart/values.yaml â”‚
+â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¬â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
+             â”‚ detects drift
+             â–¼
+â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
+â”‚  Argo CD (in Minikube)  â”‚
+â”‚  sync â†’ apply Helm diff â”‚
+â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¬â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
+             â”‚ RollingUpdate
+             â–¼
+â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
+â”‚  Kubernetes (Minikube)  â”‚
+â”‚  namespace: taskflow    â”‚
+â”‚  â€¢ Deployment           â”‚
+â”‚  â€¢ Service (ClusterIP)  â”‚
+â”‚  â€¢ Ingress (nginx)      â”‚
+â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
+             â”‚
+             â–¼ http://taskflow.local
           Browser
 ```
