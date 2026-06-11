@@ -80,7 +80,7 @@ jobs:
       - name: Checkout monorepo (argocd-demo)
         uses: actions/checkout@v4
         with:
-          repository: riteshchandure7/argocd-demo
+          repository: riteshchandure07/argocd-demo
           token: ${{ secrets.GITOPS_TOKEN }}
           path: gitops
 
